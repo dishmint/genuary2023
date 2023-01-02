@@ -10,6 +10,7 @@ fn main() {
 struct Model {
     title: String,
     length: f32,
+    rate: f32,
 }
 
 fn model(app: &App) -> Model {
@@ -19,19 +20,23 @@ fn model(app: &App) -> Model {
 
     let win = app.window_rect();
     let length = win.w() * 0.33;
+    let rate = 0.25;
+
     Model {
         title,
-        length
+        length,
+        rate
     }
 }
 
-fn update(_app: &App, _model: &mut Model, _update: Update) {
-
+fn update(app: &App, model: &mut Model, _update: Update) {
+    model.rate = app.time * 0.5;
 }
 
 fn view(app: &App, model: &Model, frame: Frame){
     let draw = app.draw();
     let win = app.window_rect();
+
     if app.elapsed_frames() < 1 {
         draw.background().color(BLACK);
     }
@@ -39,9 +44,18 @@ fn view(app: &App, model: &Model, frame: Frame){
     draw.line()
         .start(win.xy() - vec2(model.length,0.0))
         .end(  win.xy() + vec2(model.length, 0.0))
-        .stroke_weight(1.0)
+        .stroke_weight(0.5)
         .color(WHITE)
-        .roll(app.time.sin());
+        .roll(model.rate)
+        .pitch(model.rate);
+    
+    draw.ellipse()
+        .no_fill()
+        .radius(model.length)
+        .stroke_weight(1.0)
+        .stroke_color(BLUE)
+        .yaw(model.rate)
+        .pitch(model.rate);
 
     draw.text(&model.title)
         .xy(win.mid_bottom()+vec2(0.0,14.0))
@@ -50,6 +64,6 @@ fn view(app: &App, model: &Model, frame: Frame){
 
     draw.rect()
         .wh(win.wh())
-        .color(srgba(0.0,0.0,0.0,0.01));
+        .color(srgba(0.0,0.0,0.0,0.05));
     draw.to_frame(app, &frame).unwrap();
 }
